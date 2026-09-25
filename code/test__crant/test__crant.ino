@@ -44,12 +44,6 @@ void testEcran() {
     lcd.write(byte(0)); // ligne du bas
     delay(150);
   }
-    for (int row = 0; row < 2; row++) {
-        lcd.setCursor(0, row);
-        for (int col = 0; col < 16; col++) {
-          lcd.write(byte(0)); // affiche le bloc plein
-        delay(150)
-        }
 
   // --- Message de fin ---
   lcd.clear();
