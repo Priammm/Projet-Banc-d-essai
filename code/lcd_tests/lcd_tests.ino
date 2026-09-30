@@ -1,6 +1,62 @@
+/*
+  ============================================================
+  TESTEUR D'ECRAN LCD 16x2 - MENU A BOUTONS
+  Carte : Arduino Uno (fonctionne aussi dans SimulIDE)
+  ============================================================
+
+  PRINCIPE
+  --------
+  Au demarrage, un menu s'affiche sur l'ecran. On choisit un test
+  avec les boutons, on le lance, et on peut l'arreter a tout moment.
+
+  BOUTONS (3 boutons poussoirs)
+  -----------------------------
+  Chaque bouton est branche entre la broche Arduino et GND.
+  Pas besoin de resistance : on utilise la resistance interne
+  (INPUT_PULLUP). Au repos la broche lit HIGH, appuye elle lit LOW.
+
+    Bouton SUIVANT -> broche D6 : passe au test suivant dans le menu
+    Bouton OK      -> broche D7 : lance le test affiche
+    Bouton RETOUR  -> broche D8 : arrete le test et revient au menu
+
+  Remarque SimulIDE : si le pull-up interne ne fonctionne pas dans
+  ta version, ajoute une resistance de 10k entre chaque broche
+  (D6, D7, D8) et le +5V.
+
+  BRANCHEMENT DU LCD (identique aux versions precedentes)
+  -------------------------------------------------------
+    RS -> D12     E  -> D11
+    D4 -> D5      D5 -> D4      D6 -> D3      D7 -> D2
+    RW -> GND     VSS -> GND    VDD -> 5V
+    V0 -> curseur du potentiometre (contraste)
+    (broches D6/D7/D8 de l'Arduino : ne pas confondre avec
+     D6/D7 du LCD, ce sont des broches differentes !)
+
+  LISTE DES TESTS
+  ---------------
+    1. Blocs un par un      : les blocs apparaissent et restent
+    2. Bloc qui defile      : une colonne pleine traverse l'ecran
+    3. Table ASCII          : affiche les caracteres 32 a 255
+    4. Caracteres perso     : coeur, smiley, fleche, cloche
+    5. Damier / clignote    : damier, inversion, clignotement
+    6. Defilement texte     : texte qui glisse gauche puis droite
+    7. Barre progression    : barre de 0 a 100 %
+    8. Chrono               : temps ecoule, RETOUR pour arreter
+    9. Test boutons         : etat des 3 boutons en direct
+                              (maintenir RETOUR 1,5 s pour sortir)
+
+  ASTUCE
+  ------
+  Les textes n'ont pas d'accents : le LCD HD44780 ne les gere pas.
+  Pour changer la vitesse d'un test, modifie les valeurs passees
+  a attendre(...) (en millisecondes).
+*/
+
 #include <LiquidCrystal.h>
 
+// ------------------------------------------------------------
 // CONFIGURATION DES BROCHES
+// ------------------------------------------------------------
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
@@ -8,7 +64,9 @@ const int BTN_SUIVANT = 6;   // passe au test suivant
 const int BTN_OK      = 7;   // lance le test
 const int BTN_RETOUR  = 8;   // quitte le test en cours
 
-// MENU : noms affiches 
+// ------------------------------------------------------------
+// MENU : noms affiches (16 caracteres maximum par nom)
+// ------------------------------------------------------------
 const int NB_TESTS = 9;
 const char* nomsTests[NB_TESTS] = {
   "Blocs un a un",
@@ -24,8 +82,12 @@ const char* nomsTests[NB_TESTS] = {
 
 int choix = 0;   // test actuellement selectionne dans le menu
 
+// ------------------------------------------------------------
 // CARACTERES PERSONNALISES
-byte blocPlein[8] = {
+// Chaque caractere = 8 lignes de 5 pixels (1 = pixel allume).
+// Le LCD ne peut memoriser que 8 caracteres (positions 0 a 7).
+// ------------------------------------------------------------
+byte blocPlein[8] = {          // position 0 : toujours chargee
   0b11111, 0b11111, 0b11111, 0b11111,
   0b11111, 0b11111, 0b11111, 0b11111
 };
@@ -50,21 +112,29 @@ byte cloche[8] = {
   0b11111, 0b00000, 0b00100, 0b00000
 };
 
+// ============================================================
 // FONCTIONS UTILITAIRES
+// ============================================================
 
+// Renvoie true UNE SEULE FOIS quand on appuie sur le bouton.
+// - anti-rebond de 30 ms
+// - attend que le bouton soit relache avant de rendre la main
 bool appui(int pin) {
   if (digitalRead(pin) == LOW) {
-    delay(30); 
+    delay(30);                        // anti-rebond
     if (digitalRead(pin) == LOW) {
-      while (digitalRead(pin) == LOW) { }
-      delay(30);
+      while (digitalRead(pin) == LOW) { }   // attend le relachement
+      delay(30);                      // anti-rebond au relachement
       return true;
     }
   }
   return false;
 }
 
-
+// Pause de 'ms' millisecondes, INTERROMPUE si on appuie sur RETOUR.
+// Renvoie true si la pause est allee au bout,
+// false si l'utilisateur a appuye sur RETOUR.
+// Utilisation dans un test : if (!attendre(500)) return;
 bool attendre(unsigned long ms) {
   unsigned long debut = millis();
   while (millis() - debut < ms) {
@@ -73,28 +143,33 @@ bool attendre(unsigned long ms) {
   return true;
 }
 
+// Affiche un texte sur une ligne en effacant le reste de la ligne
 void ligne(int numero, const char* texte) {
   lcd.setCursor(0, numero);
-  lcd.print("                ");
+  lcd.print("                ");   // 16 espaces
   lcd.setCursor(0, numero);
   lcd.print(texte);
 }
 
+// ============================================================
 // MENU
+// ============================================================
 void afficherMenu() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(">");
+  lcd.print(">");                  // curseur devant le test choisi
   lcd.print(nomsTests[choix]);
   lcd.setCursor(0, 1);
-  lcd.print(choix + 1);
+  lcd.print(choix + 1);            // numero du test
   lcd.print("/");
   lcd.print(NB_TESTS);
   lcd.print(" OK=lancer");
 }
 
-
+// ============================================================
 // LES TESTS
+// Chaque test peut etre arrete avec le bouton RETOUR.
+// ============================================================
 
 // ---- TEST 1 : blocs un par un, ils restent en place ----
 void testBlocs() {
@@ -105,12 +180,12 @@ void testBlocs() {
 
   for (int col = 0; col < 16; col++) {
     lcd.setCursor(col, 0);
-    lcd.write(byte(0));
+    lcd.write(byte(0));            // bloc ligne du haut
     lcd.setCursor(col, 1);
-    lcd.write(byte(0));
-    if (!attendre(500)) return;
+    lcd.write(byte(0));            // bloc ligne du bas
+    if (!attendre(500)) return;    // vitesse : 500 ms par colonne
   }
-  attendre(2000);
+  attendre(2000);                  // ecran plein, on laisse voir
 }
 
 // ---- TEST 2 : une colonne pleine qui traverse l'ecran ----
@@ -125,7 +200,8 @@ void testDefilementBloc() {
   }
 }
 
-// ---- TEST 3 : table ASCII
+// ---- TEST 3 : table ASCII (caracteres 32 a 255) ----
+// 32 caracteres par page (16 par ligne), 7 pages.
 void testASCII() {
   for (int debut = 32; debut < 256; debut += 32) {
     lcd.clear();
@@ -133,12 +209,13 @@ void testASCII() {
     for (int c = debut; c < debut + 16; c++) lcd.write((uint8_t)c);
     lcd.setCursor(0, 1);
     for (int c = debut + 16; c < debut + 32; c++) lcd.write((uint8_t)c);
-    if (!attendre(2500)) return;
+    if (!attendre(2500)) return;   // 2,5 s par page
   }
 }
 
 // ---- TEST 4 : caracteres personnalises ----
 void testPerso() {
+  // On charge les 4 caracteres dans les positions 1 a 4
   lcd.createChar(1, coeur);
   lcd.createChar(2, smiley);
   lcd.createChar(3, fleche);
@@ -200,7 +277,7 @@ void testDefilementTexte() {
     lcd.scrollDisplayRight();
     if (!attendre(250)) { lcd.clear(); return; }
   }
-  lcd.clear();
+  lcd.clear();                      // remet le decalage a zero
 }
 
 // ---- TEST 7 : barre de progression de 0 a 100 % ----
@@ -276,7 +353,9 @@ void testBoutons() {
   }
 }
 
+// ============================================================
 // LANCEMENT D'UN TEST SELON LE NUMERO CHOISI
+// ============================================================
 void lancerTest(int numero) {
   switch (numero) {
     case 0: testBlocs();           break;
@@ -291,10 +370,12 @@ void lancerTest(int numero) {
   }
 }
 
+// ============================================================
 // SETUP : execute une seule fois au demarrage
+// ============================================================
 void setup() {
   lcd.begin(16, 2);
-  lcd.createChar(0, blocPlein); 
+  lcd.createChar(0, blocPlein);     // bloc plein en position 0
 
   // Boutons en entree avec resistance de rappel interne
   pinMode(BTN_SUIVANT, INPUT_PULLUP);
@@ -311,7 +392,9 @@ void setup() {
   afficherMenu();
 }
 
+// ============================================================
 // LOOP : le menu tourne en boucle
+// ============================================================
 void loop() {
   // SUIVANT : passe au test suivant (revient au 1er apres le dernier)
   if (appui(BTN_SUIVANT)) {
