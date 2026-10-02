@@ -111,7 +111,7 @@ Le dossier `pcb/` contient les fichiers de conception de la carte (outil utilis�
 - [x] Finaliser les tests de l'écran LCD
 - [x] Valider la simulation
 - [x] Réaliser et tester le PCB
-- [ ] Documenter les résultats
+- [x] Documenter les résultats
 
 ## Auteur
 
