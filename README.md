@@ -2,7 +2,7 @@
 
 Banc d'essai permettant de tester et de valider le fonctionnement d'un écran LCD Hitachi (afficheur à base de contrôleur HD44780) : carte électronique dédiée, code de test embarqué et simulation du montage.
 
-![Statut](https://img.shields.io/badge/coverage-Finish-green)
+![Statut](https://img.shields.io/badge/Statut-Finish-green)
 
 ---
 
