@@ -3,7 +3,6 @@
 Banc d'essai permettant de tester et de valider le fonctionnement d'un écran LCD Hitachi (afficheur à base de contrôleur HD44780) : carte électronique dédiée, code de test embarqué et simulation du montage.
 
 ![Statut](https://img.shields.io/badge/statut-en%20cours-orange)
-![Licence](https://img.shields.io/badge/licence-%C3%A0%20d%C3%A9finir-lightgrey)
 
 ---
 
@@ -18,7 +17,6 @@ Banc d'essai permettant de tester et de valider le fonctionnement d'un écran LC
 - [PCB](#pcb)
 - [Feuille de route](#feuille-de-route)
 - [Auteur](#auteur)
-- [Licence](#licence)
 
 ---
 
@@ -34,8 +32,6 @@ Le dépôt regroupe les trois volets du projet :
 
 ## Fonctionnalités
 
-> À adapter selon l'état réel du projet.
-
 - Initialisation et configuration de l'écran LCD
 - Affichage de caractères et de chaînes de test
 - Test de toutes les cases / lignes de l'afficheur
@@ -48,6 +44,7 @@ Le dépôt regroupe les trois volets du projet :
 Projet-Banc-d-essai/
 ├── code/
 │   └── lcd_tests/      # Programmes de test de l'écran LCD
+├── documentation/      # Document en lien avec le projet
 ├── pcb/                # Fichiers de conception de la carte électronique
 ├── simulation/         # Fichiers de simulation du montage
 └── README.md
@@ -56,12 +53,12 @@ Projet-Banc-d-essai/
 | Dossier | Contenu |
 |---|---|
 | `code/lcd_tests` | Code source des tests de l'écran LCD |
+| `documentation/fiche-maintenance` | Fiche pour la maintenance du pcb |
 | `pcb` | Schéma électrique, routage et fichiers de fabrication |
 | `simulation` | Projet de simulation du circuit |
 
 ## Matériel nécessaire
 
-> À compléter avec votre liste exacte.
 
 - Écran LCD Hitachi (ex. 16×2, HD44780)
 - Microcontrôleur / carte de développement : *à préciser*
@@ -92,17 +89,17 @@ Projet-Banc-d-essai/
 
 ## Simulation
 
-Le dossier `simulation/` contient le projet de simulation du montage (outil utilisé : *à préciser, ex. Proteus, Tinkercad, LTspice*).
+Le dossier `simulation/` contient le projet de simulation du montage (outil utilisé : Simulide).
 
 Pour l'utiliser :
 
-1. Ouvrir le fichier de simulation avec le logiciel correspondant ;
+1. Ouvrir le fichier de simulation avec Simulide ;
 2. Charger le programme compilé (`.hex`) dans le microcontrôleur simulé ;
 3. Lancer la simulation.
 
 ## PCB
 
-Le dossier `pcb/` contient les fichiers de conception de la carte (outil utilisé : *à préciser, ex. KiCad, Altium, Eagle*) :
+Le dossier `pcb/` contient les fichiers de conception de la carte (outil utilisé : Kicad 9) :
 
 - Schéma électrique
 - Routage de la carte
@@ -111,15 +108,11 @@ Le dossier `pcb/` contient les fichiers de conception de la carte (outil utilis�
 ## Feuille de route
 
 - [x] Structure du projet
-- [ ] Finaliser les tests de l'écran LCD
-- [ ] Valider la simulation
-- [ ] Réaliser et tester le PCB
+- [x] Finaliser les tests de l'écran LCD
+- [x] Valider la simulation
+- [x] Réaliser et tester le PCB
 - [ ] Documenter les résultats
 
 ## Auteur
 
-**Priammm** – [@Priammm](https://github.com/Priammm)
-
-## Licence
-
-Aucune licence n'est définie pour le moment. Vous pouvez en ajouter une (par exemple [MIT](https://choosealicense.com/licenses/mit/)) via un fichier `LICENSE`.
+**Priamm** – [@Priammm](https://github.com/Priammm)
